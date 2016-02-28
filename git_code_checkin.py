@@ -1,20 +1,34 @@
 #!/usr/bin/python3
-__author__ = 'Ashish Kayastha'
+
+__author__ = 'Ritesh Shakya'
 # Python script for automating Git code check-in emails.
-# Usage: git-code-checkin -c <commit-hash>
+# Usage: git-code-checkin -c <commit-hash> <commit-hash> ...
 
 import argparse
-import subprocess
 import collections
-import sys
 import os
+import subprocess
+import sys
+import re
 
+# regex to match deermine pattern e.g. : #12356
+deermine_pattern = re.compile(r"#\d{5}(?!\d)")
+
+# Hash-Map of commit:branches
+branch_branches = dict()
+
+# Hash-Map of deermines and descriptions ({'Deermines':{values}},{'Description':{values}})
+commit_message_array = collections.OrderedDict()
+commit_message_array["Deermines"] = list()
+commit_message_array["Descriptions"] = list()
+
+# Hash-Map of files ({'New':{files}},{'Modified':{files}},...)
 changed_files_dict = collections.OrderedDict()
-
 changed_files_dict["New"] = list()
 changed_files_dict["Modified"] = list()
 changed_files_dict["Renamed"] = list()
 changed_files_dict["Deleted"] = list()
+
 # Console colorse
 W = '\033[0m'  # white (normal)
 R = '\033[31m'  # red
@@ -29,46 +43,62 @@ GR = '\033[37m'  # gray
 def main():
     # Parse arguments
     parser = argparse.ArgumentParser(description="Code Checkin Script")
-    parser.add_argument("-c", "--commit", required=True, dest="Hash", help="Commit Hash")
+    parser.add_argument("-c", "--commits", required=True, dest="Hashs", nargs='+', help="Commit Hash")
     args = parser.parse_args()
 
-    hash = args.Hash
+    hashs = args.Hashs
+    # For each commit hash
+    for hash in hashs:
+        # Git commands to get all the required information
+        list_changed_files_cmd = "git diff-tree --no-commit-id --name-status -r -M {}".format(hash)
 
-    # Git commands to get all the required information
-    list_changed_files_cmd = "git diff-tree --no-commit-id --name-status -r -M {}".format(hash)
+        # Get list of all files
+        pipe = subprocess.Popen(list_changed_files_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        out, err = pipe.communicate()
 
-    # Get list of all files
-    pipe = subprocess.Popen(list_changed_files_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-    out, err = pipe.communicate()
+        files_list = str(out, encoding="utf_8").splitlines()
 
-    files_list = str(out, encoding="utf_8").splitlines()
+        # Maintain separate changed file lists for easier looping
+        for file in files_list:
+            if file.startswith('A'):
+                changed_files_dict["New"].append(file)
+            elif file.startswith('M'):
+                changed_files_dict["Modified"].append(file)
+            elif file.startswith('R'):
+                changed_files_dict["Renamed"].append(file)
+            elif file.startswith('D'):
+                changed_files_dict["Deleted"].append(file)
+            else:
+                pass
 
-    # Maintain separate changed file lists for easier looping
-    for file in files_list:
-        if file.startswith('A'):
-            changed_files_dict["New"].append(file)
-        elif file.startswith('M'):
-            changed_files_dict["Modified"].append(file)
-        elif file.startswith('R'):
-            changed_files_dict["Renamed"].append(file)
-        elif file.startswith('D'):
-            changed_files_dict["Deleted"].append(file)
-        else:
-            pass
+        # get name of branch
+        commit_in_branch_cmd = "git branch -r --contains {}".format(hash)
+        pipe = subprocess.Popen(commit_in_branch_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        out, err = pipe.communicate()
 
-    # get name of branch
-    commit_in_branch_cmd = "git branch -r --contains {}".format(hash)
-    pipe = subprocess.Popen(commit_in_branch_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-    out, err = pipe.communicate()
+        # Create a new string that consists of all the branches a commit is in
+        branch_list = str(out, encoding="utf_8").splitlines()
+        branch_list = [branch.strip() for branch in branch_list]
+        branches = ', '.join(branch_list)
 
-    # Create a new string that consists of all the branches a commit is in
-    branch_list = str(out, encoding="utf_8").splitlines()
-    branch_list = [branch.strip() for branch in branch_list]
-    branches = ', '.join(branch_list)
+        # Get full commit hash and commit message, used branch name to get log from any branch
+        # regardless of whether current branch has the commit or not
+        commit_hash_and_message_cmd = "git log {}".format(branch_list[0]) + " --pretty=oneline | grep {}".format(hash)
+        pipe = subprocess.Popen(commit_hash_and_message_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        out, err = pipe.communicate()
 
-    # Get full commit hash and commit message
-    commit_hash_and_message_cmd = "git log {}".format(branch_list[0]) + " --pretty=oneline | grep {}".format(hash)
+        commit = str(out, encoding="utf_8").split(' ', 1)
+        try:
+            commit_hash, commit_message = tuple(commit)
+        except ValueError:
+            print(R + "Cannot find Commit" + W)
+            sys.exit(0)
 
+        # add commit_hash:{branches}
+        branch_branches[commit_hash] = set()
+        for branch in branch_list:
+            branch_branches[commit_hash].add(branch)
+        print(branch_branches)
     # Get additional inputs
     try:
         while True:
@@ -98,15 +128,7 @@ def main():
 
     # Write an HTML file in user's 'Desktop'
     with open("{}/checkin.html".format(os.getenv("HOME")), 'w') as out_file:
-        pipe = subprocess.Popen(commit_hash_and_message_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-        out, err = pipe.communicate()
 
-        commit = str(out, encoding="utf_8").split(' ', 1)
-        try:
-            commit_hash, commit_message = tuple(commit)
-        except ValueError:
-            print(R + "Cannot find Commit" + W)
-            sys.exit(0)
         commit_messages = commit_message.split(" -")
         i = 0;
         # Commit Hash
