@@ -4,7 +4,7 @@ git-code-checkin
 git-code-checkin is a Python script for automating Git code check-in e-mails. Currently, it works only with Python 3 on Linux. Soon, it will be cross-platform and support Python 2.
 
 **Author:** Ashish Kayastha <kayastha.ashish@ymail.com>
-**Forked:** Ritesh Shakya <riteshakya037@gmail.com>
+**Modified:** Ritesh Shakya <riteshakya037@gmail.com>
 
 Dependencies
 ------------
@@ -25,3 +25,15 @@ Example Usage
     $ git-code-checkin -c {<commit-hash>}	# Use the -c or --commit option and paste the commit hashs
 
     # Paste the HTML text in clipboard to your e-mail's 'Compose' window.
+    
+Commit Syntax for best usage
+-------------
+    {deermines}
+    -description
+    -description
+    
+    e.g.
+    #84468,#84469,#84425
+    -Fix multiple case of "Unknown" and "UNKNOWN" duw to crosswalk
+    -Duplication in record due removed by use of firstBy.
+    -Hardcoded "Orphan_" in mbr_id, dw_member_id for Coventry Claims

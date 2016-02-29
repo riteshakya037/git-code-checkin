@@ -1,6 +1,5 @@
 #!/usr/bin/python3
-
-__author__ = 'Ritesh Shakya'
+__author__ = 'Ashish Kayastha', 'Ritesh Shakya'
 # Python script for automating Git code check-in emails.
 # Usage: git-code-checkin -c <commit-hash> <commit-hash> ...
 
