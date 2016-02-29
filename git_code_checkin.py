@@ -95,12 +95,12 @@ def main():
         try:
             commit_hash, commit_message = tuple(commit)
         except ValueError:
-            print(R + "Cannot find Commit" + W)
+            print(R + "Cannot find Commit ".format(hash) + W)
             sys.exit(0)
         commit_messages = commit_message.split(" -")
         once = True
         for msg in commit_messages:
-            if "#" in msg and once:
+            if msg.startswith("#") and once:
                 once = False
             else:
                 commit_message_array["Descriptions"].append(msg)
