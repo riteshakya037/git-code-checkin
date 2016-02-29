@@ -96,7 +96,7 @@ def main():
             commit_hash, commit_message = tuple(commit)
         except ValueError:
             print(R + "Cannot find Commit ".format(hash) + W)
-            sys.exit(0)
+            continue
         commit_messages = commit_message.split(" -")
         once = True
         for msg in commit_messages:
