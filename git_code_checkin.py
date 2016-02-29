@@ -47,6 +47,7 @@ def main():
     args = parser.parse_args()
 
     hashs = args.Hashs
+    hashs = list(set(hashs))
     print(G + "Fetching details...." + W)
     # For each commit hash
     hashCount = 1
@@ -107,6 +108,8 @@ def main():
                 commit_message_array["Descriptions"].append(msg)
         # add commit_hash:branches
         branch_branches[commit_hash] = branches
+    # Removing duplicates from Deermines
+    commit_message_array["Deermines"] = list(set(commit_message_array["Deermines"]))
     # Get additional inputs
     try:
         while True:
@@ -137,15 +140,12 @@ def main():
     # Write an HTML file in user's 'Desktop'
     with open("{}/checkin.html".format(os.getenv("HOME")), 'w') as out_file:
 
-        commit_messages = commit_message.split(" -")
-        i = 0
         # Commit Hash
         out_file.write(
             "<div>DasScrub Code CheckIn (" + account.title() + " " + client.title() + ")</div>")
         out_file.write("<div><br></div>")
         # Deermine
         if commit_message_array["Deermines"]:
-            i = 1
             out_file.write(
                 "<div><strong>Deermines:</strong>&nbsp;</div><ul>")
             for dm in commit_message_array["Deermines"]:
@@ -161,7 +161,6 @@ def main():
             for dm in commit_message_array["Descriptions"]:
                 out_file.write(
                     "<li>" + dm + "</li>")
-                i += 1
             out_file.write("</ol></br>")
         # Code/Unit Test Reviewed By
         out_file.write(
