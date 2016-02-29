@@ -47,8 +47,12 @@ def main():
     args = parser.parse_args()
 
     hashs = args.Hashs
+    print(G + "Fetching details...." + W)
     # For each commit hash
+    hashCount = 1
     for hash in hashs:
+        print(G + "{}".format(hashCount) + " " + "{}".format(hash) + W)
+        hashCount += 1
         # Git commands to get all the required information
         list_changed_files_cmd = "git diff-tree --no-commit-id --name-status -r -M {}".format(hash)
 
@@ -96,7 +100,6 @@ def main():
 
         # add commit_hash:branches
         branch_branches[commit_hash] = branches
-    print(branch_branches)
     # Get additional inputs
     try:
         while True:
