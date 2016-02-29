@@ -28,12 +28,24 @@ Example Usage
     
 Commit Syntax for best usage
 -------------
+1 Header Deermine
+-------------
     {deermines}
     -description
     -description
     
     e.g.
     #84468,#84469,#84425
-    -Fix multiple case of "Unknown" and "UNKNOWN" duw to crosswalk
+    -Fix multiple case of "Unknown" and "UNKNOWN" due to crosswalk
     -Duplication in record due removed by use of firstBy.
     -Hardcoded "Orphan_" in mbr_id, dw_member_id for Coventry Claims
+    
+2 Embedded Deermine
+-------------
+    -description #deermine description
+    -description
+    
+    e.g.
+    -Fix multiple case of "Unknown" and "UNKNOWN" due to crosswalk #84468
+    -Duplication in record due removed by use of firstBy.
+

@@ -98,13 +98,15 @@ def main():
             print(R + "Cannot find Commit" + W)
             sys.exit(0)
         commit_messages = commit_message.split(" -")
+        once = True
         for msg in commit_messages:
-            if "#" in msg:
-                deermine_list = deermine_pattern.findall(msg)
-                for dm in deermine_list:
-                    commit_message_array["Deermines"].append(dm)
+            if "#" in msg and once:
+                once = False
             else:
                 commit_message_array["Descriptions"].append(msg)
+            deermine_list = deermine_pattern.findall(msg)
+            for dm in deermine_list:
+                commit_message_array["Deermines"].append(dm)
         # add commit_hash:branches
         branch_branches[commit_hash] = branches
     # Removing duplicates from Deermines
