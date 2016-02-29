@@ -97,7 +97,14 @@ def main():
         except ValueError:
             print(R + "Cannot find Commit" + W)
             sys.exit(0)
-
+        commit_messages = commit_message.split(" -")
+        for msg in commit_messages:
+            if "#" in msg:
+                deermine_list = deermine_pattern.findall(msg)
+                for dm in deermine_list:
+                    commit_message_array["Deermines"].append(dm)
+            else:
+                commit_message_array["Descriptions"].append(msg)
         # add commit_hash:branches
         branch_branches[commit_hash] = branches
     # Get additional inputs
@@ -137,24 +144,23 @@ def main():
             "<div>DasScrub Code CheckIn (" + account.title() + " " + client.title() + ")</div>")
         out_file.write("<div><br></div>")
         # Deermine
-        if "#" in commit_messages[0]:
+        if commit_message_array["Deermines"]:
             i = 1
-            deermine_list = commit_messages[0].split(",")
             out_file.write(
                 "<div><strong>Deermines:</strong>&nbsp;</div><ul>")
-            for dm in deermine_list:
+            for dm in commit_message_array["Deermines"]:
                 out_file.write(
                     "<li><a href=\"https://svn.deerwalk.com/issues/" + dm.replace("#", "") + "\" target=\"_blank\">" +
-                    dm.replace("#", "") + "</a></li>")
+                    dm + "</a></li>")
             out_file.write("</ul><br/>")
 
         # Description
-        if len(commit_messages) > 1:
+        if commit_message_array["Descriptions"]:
             out_file.write(
                 "<div><strong>Description:</strong>&nbsp;</div><ol>")
-            while i < len(commit_messages):
+            for dm in commit_message_array["Descriptions"]:
                 out_file.write(
-                    "<li>" + commit_messages[i] + "</li>")
+                    "<li>" + dm + "</li>")
                 i += 1
             out_file.write("</ol></br>")
         # Code/Unit Test Reviewed By
