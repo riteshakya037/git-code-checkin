@@ -12,7 +12,7 @@ import sys
 import re
 
 # regex to match deermine pattern e.g. : #12356
-deermine_pattern = re.compile(r"#\d{5}(?!\d)")
+deermine_pattern = re.compile(r"#\d{5}")
 
 # Hash-Map of commit:branches
 branch_branches = dict()
@@ -94,11 +94,9 @@ def main():
             print(R + "Cannot find Commit" + W)
             sys.exit(0)
 
-        # add commit_hash:{branches}
-        branch_branches[commit_hash] = set()
-        for branch in branch_list:
-            branch_branches[commit_hash].add(branch)
-        print(branch_branches)
+        # add commit_hash:branches
+        branch_branches[commit_hash] = branches
+    print(branch_branches)
     # Get additional inputs
     try:
         while True:
@@ -130,7 +128,7 @@ def main():
     with open("{}/checkin.html".format(os.getenv("HOME")), 'w') as out_file:
 
         commit_messages = commit_message.split(" -")
-        i = 0;
+        i = 0
         # Commit Hash
         out_file.write(
             "<div>DasScrub Code CheckIn (" + account.title() + " " + client.title() + ")</div>")
@@ -162,15 +160,12 @@ def main():
                 reviewed_by))
         out_file.write("<div><br></div>")
 
-        # Git Branch
+        # Git Branch and Commits
         out_file.write(
-            "<div><b>Git Branch:</b>&nbsp;{}</div>".format(branches))
-        out_file.write("<div><br></div>")
-
-        # Commit Hash
-        out_file.write("<div><b>Commit Hash:</b>&nbsp;{}</div>".format(
-            commit_hash))
-        out_file.write("<div><br></div>")
+            "<div><b>Git Hash & Commit:</b></div><ul>")
+        for key, value in branch_branches.items():
+            out_file.write("<li><b>{}</b>".format(key) + " - " + "{}</li>".format(value))
+        out_file.write("</ul><div><br></div>")
 
         for header, file_list in changed_files_dict.items():
             if len(file_list) != 0:
