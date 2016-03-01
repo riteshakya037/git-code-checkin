@@ -15,7 +15,7 @@ deermine_pattern = re.compile(r"#\d{5}")
 
 # Hash-Map of commit:branches
 branch_branches = dict()
-
+log_list = dict()
 # Hash-Map of deermines and descriptions ({'Deermines':{values}},{'Description':{values}})
 commit_message_array = collections.OrderedDict()
 commit_message_array["Deermines"] = list()
@@ -42,11 +42,53 @@ GR = '\033[37m'  # gray
 def main():
     # Parse arguments
     parser = argparse.ArgumentParser(description="Code Checkin Script")
-    parser.add_argument("-c", "--commits", required=True, dest="Hashs", nargs='+', help="Commit Hash")
+    parser.add_argument("-c", "--commits", dest="Hashs", nargs='+', help="Commit Hash")
     args = parser.parse_args()
 
+    global hashs
     hashs = args.Hashs
-    hashs = list(set(hashs))
+    if not hashs:
+        commit_hash_and_message_cmd = "git log --pretty=oneline | head -20"
+        pipe = subprocess.Popen(commit_hash_and_message_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        out, err = pipe.communicate()
+        logs = str(out, encoding="utf_8").splitlines()
+        i = 1
+        for log in logs:
+            print(C + "{}".format(i) + W + " - " + G + log + W)
+            try:
+                commit_hash, commit_message = tuple(log.split(' ', 1))
+            except ValueError:
+                print(R + "Cannot find Commit " + W)
+            log_list[i] = commit_hash
+            i += 1
+        print("\nPlease specify a number(s) to run. (eg. 2 or 2,3,4 or 3-9 etc.) ?")
+        try:
+            if sys.version_info >= (3, 0):
+                jobs = input()
+            else:
+                jobs = raw_input()
+        except KeyboardInterrupt:
+            print(R + "USER CANCELED" + W)
+            sys.exit(1)
+        pattern = re.compile("(^([0-9]+?-[0-9]+?)|^[0-9]+?)((,[0-9]+?-[0-9]+?)|(,[0-9]+?))*$")
+
+        if not pattern.match(jobs):
+            print("The specified no(s) {0} are not in valid format. Valid format is 1-5,6,7,8-11.\n".format(jobs))
+            sys.exit(100)
+        jobsToRun = jobs.split(',')
+        hashs = []
+        for job in jobsToRun:
+            if job.find('-') != -1:
+                i, j = job.split('-')
+                i = int(i)
+                j = int(j)
+                while i <= j:
+                    hashs.append(log_list.get(i))
+                    i += 1
+            else:
+                hashs.append(log_list.get(int(job)))
+    else:
+        hashs = list(set(hashs))
     print(G + "Fetching details...." + W)
     # For each commit hash
     hashCount = 1

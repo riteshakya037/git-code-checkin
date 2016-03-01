@@ -19,10 +19,20 @@ Install
 
 Example Usage
 -------------
+1
+-------------
     # Change to the Git repository directory.
 
     $ git log --oneline			        # Find out your commit hash
     $ git-code-checkin -c {<commit-hash>}	# Use the -c or --commit option and paste the commit hashs
+
+    # Paste the HTML text in clipboard to your e-mail's 'Compose' window.
+
+2
+-------------
+    # Change to the Git repository directory.
+    
+    $ git-code-checkin 
 
     # Paste the HTML text in clipboard to your e-mail's 'Compose' window.
     
